@@ -1,13 +1,17 @@
+package main.java;
+
 import java.util.*;
 
 public class WordleGame {
-    private static final int WORD_LENGTH = 5; // Length of the secret word
-    private static final int MAX_ATTEMPTS = 6; // Maximum number of attempts
+    public static final int WORD_LENGTH = 5; // Length of the secret word
+    public static final int MAX_ATTEMPTS = 6; // Maximum number of attempts
 
     private static String secretWord; // Core entity of the program
     private static List<Character> guessedLetters;
     private static List<String> feedbackHistory;
     private static List<Integer> correctPositions;
+    private static final WordLoader wordLoader = new WordLoader("C:/Users/HP/IdeaProjects/Wordle/src/main/resources/5_letter_words.txt");
+    private static final List<String> wordList = wordLoader.getWordList();
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -28,6 +32,12 @@ public class WordleGame {
 
                 if (guess.length() != WORD_LENGTH) {
                     System.out.println("Invalid input. Please enter a " + WORD_LENGTH + "-letter word.");
+                    continue;
+                }
+
+                // Validate the user input against the word list
+                if (!isValidWord(guess)) {
+                    System.out.println("Not a valid word. Please enter a valid word.");
                     continue;
                 }
 
@@ -53,9 +63,7 @@ public class WordleGame {
         scanner.close();
     }
 
-    private static void initializeGame() {
-        WordLoader wordLoader = new WordLoader("C:/Users/HP/IdeaProjects/Wordle/src/5_letter_words.txt");
-        List<String> wordList = wordLoader.getWordList();
+    public static void initializeGame() {
         Random random = new Random();
         int randomIndex = random.nextInt(wordList.size());
         secretWord = wordList.get(randomIndex);
@@ -64,13 +72,14 @@ public class WordleGame {
         correctPositions = new ArrayList<>();
     }
 
-    private static boolean isCorrectGuess(String guess) {
+    public static boolean isCorrectGuess(String guess) {
         return guess.equals(secretWord);
     }
 
-    private static void displayFeedback(String guess) {
+    static void displayFeedback(String guess) {
         guessedLetters.clear();
         correctPositions.clear();
+        Set<Character> correctInWrongSpot = new HashSet<>(); // Keep track of letters guessed correctly in the wrong spot
         for (char letter : guess.toCharArray()) {
             guessedLetters.add(letter);
         }
@@ -83,7 +92,8 @@ public class WordleGame {
             if (isCorrectGuessInRightSpot(letter, guessedLetter)) {
                 feedback.append(letter); // Guessed correctly in the right spot
                 correctPositions.add(i); // Record the position of correctly guessed letter
-            } else if (isCorrectGuessInWrongSpot(guessedLetter) && !correctPositions.contains(i)) {
+                correctInWrongSpot.add(letter); // Mark as already displayed in the wrong spot
+            } else if (isCorrectGuessInWrongSpot(guessedLetter) && !correctPositions.contains(i) && !correctInWrongSpot.contains(guessedLetter)) {
                 feedback.append(Character.toUpperCase(guessedLetter)); // Guessed correctly but in the wrong spot
             } else {
                 feedback.append("*"); // Not guessed
@@ -99,12 +109,17 @@ public class WordleGame {
         showKeyboard();
     }
 
-    private static boolean isCorrectGuessInRightSpot(char letter, char guessedLetter) {
+    static boolean isCorrectGuessInRightSpot(char letter, char guessedLetter) {
         return guessedLetter == letter;
     }
 
-    private static boolean isCorrectGuessInWrongSpot(char guessedLetter) {
+    static boolean isCorrectGuessInWrongSpot(char guessedLetter) {
         return secretWord.contains(String.valueOf(guessedLetter));
+    }
+
+    // Validate if a given word is in the word list
+    private static boolean isValidWord(String word) {
+        return wordList.contains(word);
     }
 
 
@@ -129,5 +144,17 @@ public class WordleGame {
             }
         }
         System.out.println();
+    }
+
+    public static String getSecretWord() {
+        return secretWord;
+    }
+
+    public static void setSecretWord(String newSecretWord) {
+        secretWord = newSecretWord;
+    }
+
+    public static List<String> getFeedbackHistory() {
+        return feedbackHistory;
     }
 }
