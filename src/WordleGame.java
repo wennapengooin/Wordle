@@ -4,8 +4,10 @@ public class WordleGame {
     private static final int WORD_LENGTH = 5; // Length of the secret word
     private static final int MAX_ATTEMPTS = 6; // Maximum number of attempts
 
-    private static String secretWord;
+    private static String secretWord; // Core entity of the program
     private static List<Character> guessedLetters;
+    private static List<String> feedbackHistory;
+    private static List<Integer> correctPositions;
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -58,6 +60,8 @@ public class WordleGame {
         int randomIndex = random.nextInt(wordList.size());
         secretWord = wordList.get(randomIndex);
         guessedLetters = new ArrayList<>();
+        feedbackHistory = new ArrayList<>();
+        correctPositions = new ArrayList<>();
     }
 
     private static boolean isCorrectGuess(String guess) {
@@ -66,6 +70,7 @@ public class WordleGame {
 
     private static void displayFeedback(String guess) {
         guessedLetters.clear();
+        correctPositions.clear();
         for (char letter : guess.toCharArray()) {
             guessedLetters.add(letter);
         }
@@ -75,17 +80,31 @@ public class WordleGame {
             char letter = secretWord.charAt(i);
             char guessedLetter = guess.charAt(i);
 
-            if (guessedLetter == letter) {
+            if (isCorrectGuessInRightSpot(letter, guessedLetter)) {
                 feedback.append(letter); // Guessed correctly in the right spot
-            } else if (secretWord.contains(String.valueOf(guessedLetter))) {
+                correctPositions.add(i); // Record the position of correctly guessed letter
+            } else if (isCorrectGuessInWrongSpot(guessedLetter) && !correctPositions.contains(i)) {
                 feedback.append(Character.toUpperCase(guessedLetter)); // Guessed correctly but in the wrong spot
             } else {
                 feedback.append("*"); // Not guessed
             }
         }
 
-        System.out.println("Feedback: " + feedback.toString());
+        feedbackHistory.add(feedback.toString());
+        System.out.println("Feedback:");
+        for (int i = 0; i <= feedbackHistory.size() - 1; i++) {
+            System.out.println("  " + feedbackHistory.get(i));
+        }
+
         showKeyboard();
+    }
+
+    private static boolean isCorrectGuessInRightSpot(char letter, char guessedLetter) {
+        return guessedLetter == letter;
+    }
+
+    private static boolean isCorrectGuessInWrongSpot(char guessedLetter) {
+        return secretWord.contains(String.valueOf(guessedLetter));
     }
 
 
