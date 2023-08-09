@@ -1,10 +1,6 @@
 package main.java;
 
 import java.util.*;
-//CREATE README
-// CLEAN UP CODE
-//BREAK UP CERTAIN METHODS
-//JAVADOCS
 
 public class Wordle {
     public static final String PLACE_HOLDER = "*"; // Placeholder for unguessed letters
@@ -24,6 +20,9 @@ public class Wordle {
     String[][] keyboard;
     int currentRow;
 
+    /**
+     * Constructor to initialize the Wordle game.
+     */
     Wordle() {
         this.letterCount = 5;
         this.attempts = 6;
@@ -36,6 +35,11 @@ public class Wordle {
         this.keyboard = initializeKeyboard();
     }
 
+    /**
+     * Initializes the keyboard layout.
+     *
+     * @return The 2D array representing the keyboard layout.
+     */
     private String[][] initializeKeyboard() {
         String[][] keyboard;
         keyboard = new String[3][];
@@ -45,6 +49,11 @@ public class Wordle {
         return keyboard;
     }
 
+    /**
+     * Initializes the game board.
+     *
+     * @return The 2D array representing the game board.
+     */
     private String[][] initializeGameBoard() {
         gameBoard = new String[attempts][letterCount];
         for (int i = 0; i < attempts; i++) {
@@ -54,6 +63,13 @@ public class Wordle {
         }
         return gameBoard;
     }
+
+    /**
+     * Updates the game state based on the current user guess.
+     */
+    // The updateGameState() method exhibits the Strategy pattern. It dynamically changes behavior by selecting
+    // different strategies based on the user's guess. It encapsulates varying strategies for updating the game state,
+    // allowing easy addition or modification of new strategies.
 
     void updateGameState() {
         for (int i = 0; i < word.length(); i++) {
@@ -74,12 +90,24 @@ public class Wordle {
         }
     }
 
+    /**
+     * Updates the game board with a letter at a specific index.
+     *
+     * @param index The index where the letter should be placed.
+     * @param letter The letter to be placed on the game board.
+     */
     void updateGameBoard(int index, String letter) {
         for (int i = 0; i < word.length(); i++) {
             this.gameBoard[this.currentRow][index] = letter;
         }
     }
 
+    /**
+     * Updates the keyboard based on the user's guess.
+     *
+     * @param letter The letter to be placed on the keyboard.
+     * @param origLetter The original letter to be replaced on the keyboard.
+     */
     void updateKeyboard(String letter, String origLetter) {
         if (!word.contains(origLetter)) {
             letter = PLACE_HOLDER;
@@ -93,7 +121,14 @@ public class Wordle {
         }
     }
 
-
+    /**
+     * Retrieves a random word from the word list.
+     *
+     * @return A random word.
+     */
+    // This method implements a Factory Method pattern by generating and returning a random word from a predefined
+    // word list. It encapsulates the creation process of an object, providing flexibility to change the way random
+    // words are generated without affecting the calling code.
     String getRandomWord() {
         String randomWord;
         Random random = new Random();
@@ -102,6 +137,9 @@ public class Wordle {
         return randomWord;
     }
 
+    /**
+     * Prints the current game board.
+     */
     private void printGameBoard() {
         System.out.println("\nGame Board:");
         for (String[] row : gameBoard) {
@@ -112,6 +150,9 @@ public class Wordle {
         }
     }
 
+    /**
+     * Prints the keyboard layout.
+     */
     private void printKeyboard() {
         System.out.println("\nKeyboard:");
         for (String[] row : keyboard) {
@@ -123,7 +164,13 @@ public class Wordle {
         }
     }
 
-    void endGame() {
+    /**
+     * Displays the end game message based on whether the word was found or not.
+     */
+    // The endGame() method resembles the Observer pattern by notifying observers (players or users) about the game
+    // outcome. It provides different behavior based on whether the word was found or not, enabling various reactions
+    // or actions to be taken by observers.
+    void endGame() { //
         if (isWordFound) {
             System.out.println("Congratulations! You guessed the word: " + word + " with " + (attempts - currentAttempt) + " attempts left!");
         } else {
@@ -131,6 +178,11 @@ public class Wordle {
         }
     }
 
+    /**
+     * Checks if the current user guess is a valid word.
+     *
+     * @return True if the guess is a valid word, false otherwise.
+     */
     boolean isValidWord() {
         if (!Objects.equals(currentWord.length(), letterCount)) {
             return false;
@@ -138,52 +190,56 @@ public class Wordle {
         return this.words.contains(currentWord);
     }
 
+    /**
+     * Checks if the hidden word has been guessed by the player.
+     *
+     * @return True if the hidden word is guessed, false otherwise.
+     */
     boolean isWordFound() {
         return currentWord.equals(word);
     }
 
+    /**
+     * Checks if the input is "yes" or "no".
+     *
+     * @param input The input to be checked.
+     * @return True if the input is "yes" or "no", false otherwise.
+     */
     static boolean isValidYesOrNo(String input) {
         return input.equals("yes") || input.equals("no");
     }
 
     private void playGame() {
+        Scanner scanner = new Scanner(System.in);
 
         while (attempts > 0 && !isWordFound) {
-            Scanner scanner = new Scanner(System.in);
-            System.out.print("\nYou have " + (attempts - currentAttempt) + " attempts left. Enter your guess: ");
-            currentWord = scanner.next().trim().toLowerCase();
+            displayAttemptsLeft();
+            currentWord = getUserGuess(scanner);
 
             if (isValidWord()) {
                 updateGameState();
                 printGameBoard();
                 printKeyboard();
-
-                attempts -= 1;
-                currentRow += 1;
+                attempts--;
+                currentRow++;
+                checkForWordFound();
             } else {
                 System.out.println("Invalid input. Please enter a " + letterCount + "-letter word.");
             }
-            if (isWordFound()) {
-                isWordFound = true;
-            }
         }
-        if (isWordFound() || attempts == 0) {
-            endGame();
-        }
+
+        endGame();
     }
 
-    String getWord() {
-        return word;
+    private void displayAttemptsLeft() {
+        System.out.print("\nYou have " + (attempts - currentAttempt) + " attempts left. Enter your guess: ");
     }
-    void setCurrentWord(String newWord) {
-        this.currentWord = newWord;
-    }
-    String getCurrentWord() {
-        return currentWord;
-    }
-    int getCurrentRow() {
-        return currentRow;
-    }
+
+    /**
+     * Main method to start the Wordle game.
+     *
+     * @param args Command-line arguments.
+     */
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         boolean playAgain = true;
@@ -206,6 +262,25 @@ public class Wordle {
         System.out.println("Thank you for playing Wordle!");
     }
 
+    private String getUserGuess(Scanner scanner) {
+        return scanner.next().trim().toLowerCase();
+    }
+
+    private void checkForWordFound() {
+        if (isWordFound()) {
+            isWordFound = true;
+        }
+    }
+
+    String getWord() {
+        return word;
+    }
+    void setCurrentWord(String newWord) {
+        this.currentWord = newWord;
+    }
+    int getCurrentRow() {
+        return currentRow;
+    }
     public String[][] getKeyboard() {
         return keyboard;
     }
